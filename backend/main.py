@@ -1,11 +1,4 @@
 # backend/main.py
-import uvicorn
-from fastapi import FastAPI
-from dotenv import load_dotenv
-
-# Load environment variables
-load_dotenv()
-
 from backend.api.v1 import content_routes, orchestrator_routes, profile_routes, schedule_routes
 from backend.services.orchestrator_services import run_agent
 from agent.llm import llm
@@ -19,6 +12,18 @@ from agent.tools.publisher_tool import PublisherTool
 from backend.api.linkedin_api import linkedinapi
 from backend.api.research_api import researchapi
 
+import uvicorn
+from fastapi import FastAPI, Request
+from fastapi.templating import Jinja2Templates
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
+
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
+
 # Create FastAPI app
 app = FastAPI(
     title="Dynamic LinkedIn Agent API",
@@ -26,15 +31,31 @@ app = FastAPI(
     version="1.0.0"
 )
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins = ['http://localhost:8000'],
+    allow_credentials = True,
+    allow_methods = ["*"],
+    allow_headers = ["*"],
+)
+
+templates = Jinja2Templates(directory='frontend/templates')
+
+app.mount("/static", StaticFiles(directory="frontend/static"), name="static")
+
 # Include orchestrator routes
 app.include_router(orchestrator_routes.router, prefix="/api/v1/orchestrator", tags=["Orchestrator"])
 app.include_router(profile_routes.router, prefix="/api/v1/profile", tags=["Profile"])
 app.include_router(content_routes.router, prefix="/api/v1/content", tags=["Content"])
 app.include_router(schedule_routes.router, prefix="/api/v1/schedule", tags=["Schedule"])
 
-@app.get("/")
-async def root():
-    return {"message": "Backend is running", "status": "OK"}
+
+@app.get("/", response_class=HTMLResponse)
+async def root(request: Request):  # Add request parameter
+    return templates.TemplateResponse(
+        "index.html",
+        {"request": request, "status": "ok"}  # Add request to context
+    )
 
 
 @app.get("/test-run")

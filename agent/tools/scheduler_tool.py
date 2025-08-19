@@ -9,10 +9,12 @@ class ScheduleRequest(BaseModel):
     preferred_time: Optional[datetime] = None
     optimize: Optional[bool] = False
 
+
 class ScheduleResponse(BaseModel):
     content_id: str
     scheduled_time: datetime
     status: str = Field(default="scheduled")
+
 
 class SchedulerTool:
     name = "scheduler"
@@ -42,7 +44,6 @@ class SchedulerTool:
         )
         return res.model_dump()
 
-
     async def _get_best_post_time(self) -> datetime:
         """
         Simulate best post time selection based on past engagement data.
@@ -56,7 +57,6 @@ class SchedulerTool:
         if best_time < now:
             best_time += timedelta(days=1)
         return best_time
-    
 
     async def _save_schedule(self, content_id: str, scheduled_time: datetime):
         self.SCHEDULE_STORE.append({
