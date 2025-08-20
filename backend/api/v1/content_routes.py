@@ -1,9 +1,11 @@
 from fastapi import APIRouter, HTTPException
-from typing import Any, List, Dict   
+from typing import Any, List, Dict, Optional
 from pydantic import BaseModel
 from datetime import datetime, timezone
+from sqlmodel import Session, select
 
-from agent.orchestrator.orchestrator import Post
+
+from backend.db.models import Post, engine
 from backend.api.v1.profile_routes import show_profile, ProfileResponse
 
 router = APIRouter()
@@ -17,17 +19,26 @@ router = APIRouter()
 #     metadata: Dict[str, Any] = Field(default_factory=dict)
 
 class ContentJSON(BaseModel):
-    id: str
     user_id: str
     message: str
-    content: Dict[str, Post]
+    content: Optional[Dict[str, Post]]
 
 @router.post('/delete_content/{content_id}')
-async def delete_content(content_id: str) -> Dict[str, Any]:
+async def delete_content(content_id: int) -> Dict[str, Any]:
     try:
         # Simulate content deletion
-        return {"status": "content deleted successfully",
-                "message": f"Content with ID {content_id} deleted successfully"}
+        with Session(engine) as session:
+            statement = select(Post).where(Post.post_id == content_id)
+            post = session.exec(statement).first()
+            if post:
+                session.delete(post)
+                session.commit()
+                session.close()
+
+                return {"status": "content deleted successfully",
+                        "message": f"Content with ID {content_id} deleted successfully"}                
+            else:
+                raise HTTPException(status_code=404, detail="Content not found")           
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))             
 
@@ -38,13 +49,11 @@ async def fetch_content(user_id: str) -> ContentJSON:
         # Simulate fetching content
         data = await show_profile(user_id)
         if isinstance(data, ProfileResponse):
-            profile = data.profile if hasattr(data, 'profile') else None
-            raw_content = profile.raw if profile else {}
+            profile = data.profile if hasattr(data, 'profile') else None            
 
-            posts = raw_content.get('posts', [])
+            posts = profile.posts if profile else {}
 
-            data = {
-                "id": user_id,
+            data={
                 "user_id": user_id,
                 "message": "Content fetched successfully",
                 "content": {str(i): Post(**post) for i, post in enumerate(posts)}

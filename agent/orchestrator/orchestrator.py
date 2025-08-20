@@ -12,12 +12,12 @@ logger = logging.getLogger("linkedin_dynamic_agent")
 # -------------------------
 # Domain Models (Pydantic)
 # -------------------------
-class Profile(BaseModel):
-    user_id: str
-    name: str
-    headline: Optional[str] = None
-    skills: List[str] = Field(default_factory=list)
-    raw: Dict[str, Any] = Field(default_factory=dict)
+# class Profile(BaseModel):
+#     user_id: str
+#     name: str
+#     headline: Optional[str] = None
+#     skills: List[str] = Field(default_factory=list)
+#     raw: Dict[str, Any] = Field(default_factory=dict)
 
 
 class Trend(BaseModel):
@@ -27,13 +27,13 @@ class Trend(BaseModel):
     url: Optional[str] = None
 
 
-class Post(BaseModel):
-    id: Optional[str] = None
-    user_id: str
-    text: str
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    scheduled_for: Optional[datetime] = None
-    metadata: Dict[str, Any] = Field(default_factory=dict)
+# class Post(BaseModel):
+#     id: Optional[str] = None
+#     user_id: str
+#     text: str
+#     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+#     scheduled_for: Optional[datetime] = None
+#     metadata: Dict[str, Any] = Field(default_factory=dict)
 
 
 class Analytics(BaseModel):

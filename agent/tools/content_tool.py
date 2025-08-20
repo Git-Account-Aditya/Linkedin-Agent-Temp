@@ -1,5 +1,5 @@
 # imports
-from .profile_tool import Profile
+# from .profile_tool import Profile
 from .research_tool import ResearchToolOutput
 
 from pydantic import BaseModel, Field, AnyUrl
@@ -7,6 +7,7 @@ from typing import Optional, List, Annotated, Any, Dict
 from langchain_core.output_parsers import StrOutputParser
 
 from ..prompts.content_prompts import *
+from backend.db.models import UserProfile, Post  # assuming you have a UserProfile and Post model defined   
 # from ..llm import llm  # assuming you have an llm object somewhere
 
 # tools

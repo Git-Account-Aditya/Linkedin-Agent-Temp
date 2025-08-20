@@ -1,27 +1,40 @@
+from cProfile import Profile
 from fastapi import APIRouter, HTTPException
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from pydantic import BaseModel
+from sqlmodel import Session, select
 
-from agent.tools.profile_tool import Profile
+# from agent.tools.profile_tool import Profile
+from backend.db.models import UserProfile, engine  # Assuming you have a UserProfile model defined
 
 router = APIRouter()
 
 class ProfileResponse(BaseModel):
     status_code: int
     content: str
-    user_id: str
-    # profile: Profile
+    user_id: int
+    profile: Optional[UserProfile] = None  # Use UserProfile model directly
 
-@router.get('/profile/{user_id}')
-async def show_profile(user_id: str) -> ProfileResponse:
+@router.get('/get_profile/{user_id}')
+async def show_profile(user_id: int) -> ProfileResponse:
     try:
         # get data from db
-        # profile_data = await db.fetch_profile(user_id=user_id)
+        '''
+        with Session(engine) as session:
+            profile_data = session.exec(select(UserProfile).filter(UserProfile.user_id == user_id)).first()
+            if not isinstance(profile_data, UserProfile):
+                profile_data = UserProfile(**profile_data)  
+            # Close the session
+            session.close()
+        '''        
+
+        # return response
         return ProfileResponse(
             status_code=200,
             content="Profile data fetched successfully",
             user_id=user_id,
-            # profile=Profile(**profile_data)
+            # profile=profile_data
+            profile=None
         )
 
     except Exception as e:
@@ -29,10 +42,11 @@ async def show_profile(user_id: str) -> ProfileResponse:
     
 
 @router.post('/create_profile')
-async def create_profile(profile: Profile) -> ProfileResponse:
+async def create_profile(profile: UserProfile) -> ProfileResponse:
     try:
         # Store profile in the database
         # await db.store_profile(profile)
+
         # Simulate profile creation
         return ProfileResponse(
             status_code=201,

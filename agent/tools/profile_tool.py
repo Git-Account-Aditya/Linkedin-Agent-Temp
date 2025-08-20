@@ -13,22 +13,12 @@ from ..prompts.analyze_profile_prompts import (
     profile_keyword_analysis_prompt,
     profile_activity_level_prompt,
 )
+
+from backend.db.models import UserProfile  # assuming you have a UserProfile model defined
 # from ..llm import llm  # assuming you have an llm object somewhere
 # from ..integrations.linkedin_api import linkedin_api  # hypothetical API client
 
 load_dotenv()
-
-
-class Profile(BaseModel):
-    user_id: str = Field(..., description="Unique identifier for the user")
-    name: str = Field(..., description="Full name of the user")
-    experience: Optional[dict[str, str]] = Field(
-        None, description="Work experience of the user"
-    )
-    skills: Optional[List[str]] = Field(
-        None, description="List of skills of the user"
-    )
-    raw: Dict[str, Any] = Field(..., description="Raw LinkedIn payload")
 
 
 class ProfileScrapTool:
@@ -67,12 +57,13 @@ class ProfileScrapTool:
         # Step 1: Fetch raw profile
         data = await self.linkedin_api.get_profile(user_id)  # sync call in your example
 
-        profile = Profile(
+        profile = UserProfile(
             user_id=data.get("user_id"),
             name=data.get("name"),
             experience=data.get("experience"),
             skills=data.get("skills"),
             raw=data,
+            posts=data.get('posts')
         )
 
         # Step 2: Analyze profile
@@ -88,7 +79,7 @@ class ProfileScrapTool:
             "analysis": analysis,
         }
 
-    async def analyze_profile(self, profile: Profile) -> Dict[str, Any]:
+    async def analyze_profile(self, profile: UserProfile) -> Dict[str, Any]:
         """
         Runs keyword extraction and activity level scoring using LLM prompts.
         """
