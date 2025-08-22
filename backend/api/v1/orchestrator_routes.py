@@ -15,39 +15,37 @@ from backend.api.research_api import researchapi
 from agent.llm import llm
 
 
-# call tools
-def load_tools(linkedinapi, researchapi, llm):
-    return [
-        ProfileScrapTool(linkedin_api=linkedinapi, llm=llm),
-        ResearchTool(research_api=researchapi, llm=llm),
-        ContentTool(llm=llm),
-        SchedulerTool(),
-        TimerTool(),
-        PublisherTool(linkedin_api=linkedinapi)
-    ]
+router = APIRouter()
 
+# Instantiate API clients
+_linkedin_client = linkedinapi(api='fake_api')
+_research_client = researchapi(api='fake_api')
 
-_tools = load_tools(linkedinapi, researchapi, llm)
+# Build tool registry with correct dependency types
+_tools = [
+    ProfileScrapTool(linkedin_api=_linkedin_client, llm=llm),  # llm as factory (not currently used)
+    ResearchTool(research_api=_research_client, llm=llm),      # expects llm factory
+    ContentTool(llm=llm()),                                    # expects llm instance
+    SchedulerTool(),
+    TimerTool(),
+    PublisherTool(linkedin_api=_linkedin_client),
+]
 
 tools = {tool.name: tool for tool in _tools}
 
-
-# Create the payload
-payload = {
-    'context': {
-        'user_id': '12345'
-    },
-    'tool_registry': tools,
-    'llm': llm,
-    'available_tools': [{'name': name, 'description': tool.description} for name, tool in tools.items()]
-    }
-
-router = APIRouter()
-
+available_tools = [{'name': name, 'description': getattr(tool, 'description', '')} for name, tool in tools.items()]
 
 @router.post("/run")
-async def run(payload: dict):
+async def run(request_body: dict):
+    user_id = (request_body or {}).get('user_id') or 'demo-user'
+    payload = {
+        'context': {
+            'user_id': user_id,
+        },
+        'tool_registry': tools,
+        'llm': llm,
+        'available_tools': available_tools,
+    }
     response = await run_agent(payload)
-    return {"message": "Agent is running...",
-            "response": response}
+    return {"message": "Agent is running...", "response": response}
 
