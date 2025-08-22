@@ -1,11 +1,10 @@
-from cProfile import Profile
 from fastapi import APIRouter, HTTPException
 from typing import List, Dict, Any, Optional
-from pydantic import BaseModel
-from sqlmodel import Session, select
+from pydantic import BaseModel, Field, AnyUrl
+from sqlmodel import Session, select, Column, JSON
 
 # from agent.tools.profile_tool import Profile
-from backend.db.models import UserProfile, engine  # Assuming you have a UserProfile model defined
+from backend.db.models import UserProfile, Post, engine  # Assuming you have a UserProfile model defined
 
 router = APIRouter()
 
@@ -14,6 +13,12 @@ class ProfileResponse(BaseModel):
     content: str
     user_id: int
     profile: Optional[UserProfile] = None  # Use UserProfile model directly
+
+
+# Pydantic class for creating a profile
+class ProfileCreateRequest(BaseModel):
+    name: str
+    linkedin_url: AnyUrl
 
 @router.get('/get_profile/{user_id}')
 async def show_profile(user_id: int) -> ProfileResponse:
@@ -41,18 +46,32 @@ async def show_profile(user_id: int) -> ProfileResponse:
         raise HTTPException(status_code=500, detail=str(e))
     
 
-@router.post('/create_profile')
-async def create_profile(profile: UserProfile) -> ProfileResponse:
+@router.post('/create_profile/', response_model = ProfileResponse)
+async def create_profile(request_body: ProfileCreateRequest):
     try:
+        # Create a new user profile
+        profile = UserProfile(
+            name=request_body.name,
+            linkedin_url=request_body.linkedin_url
+        )
+
         # Store profile in the database
-        # await db.store_profile(profile)
+        with Session(engine) as session:
+            session.add(profile)
+            session.commit()
+            session.refresh(profile)  # Refresh to get the updated profile with user_id
+            session.close()
+
+        print('Profile created successfully')
 
         # Simulate profile creation
         return ProfileResponse(
             status_code=201,
             content="User registered successfully",
             user_id=profile.user_id,
-            # profile=profile
+            profile=profile
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+

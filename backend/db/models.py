@@ -1,6 +1,8 @@
-from sqlmodel import SQLModel, Field, create_engine, Relationship, Column, JSON
+from sqlmodel import SQLModel, Field, create_engine, Relationship, Column, JSON, String
 from typing import Optional, List, Dict, Any
 from datetime import datetime, timezone
+from pydantic import AnyUrl, field_validator, TypeAdapter
+from pydantic.type_adapter import validate_python
 
 
 # ---------- User ----------
@@ -10,21 +12,35 @@ class UserProfile(SQLModel, table=True):
     user_id: Optional[int] = Field(default=None, primary_key=True)
     name: str = Field(..., description="Full name of the user")
 
+    # store as string in DB, validate using AnyUrl
+    linkedin_url: str = Field(
+        ...,
+        sa_column=Column(String(2048)),
+        description="LinkedIn profile URL"
+    )
+
     # JSON columns for flexible data
-    experience: Dict[str, str] = Field(
+    experience: Optional[Dict[str, str]] = Field(
         sa_column=Column(JSON), default_factory=dict,
         description="Work experience of the user"
     )
-    skills: List[str] = Field(
+    skills: Optional[List[str]] = Field(
         sa_column=Column(JSON), default_factory=list,
         description="List of Skills of the user"
     )
-    raw: Dict[str, Any] = Field(
+    raw: Optional[Dict[str, Any]] = Field(
         sa_column=Column(JSON), default_factory=dict,
         description="Raw LinkedIn payload"
     )
 
-    posts: List["Post"] = Relationship(back_populates="author")
+    posts: Optional[List["Post"]] = Relationship(back_populates="author")
+
+    @field_validator("linkedin_url", pre=True, always=True)
+    def _validate_linkedin_url(cls, v):
+        # Validate with TypeAdapter (Pydantic v2) and return plain string for DB binding
+        ta = TypeAdapter(AnyUrl)
+        parsed = ta.validate_python(v)
+        return str(parsed)
 
 
 # ---------- Post ----------
@@ -37,9 +53,9 @@ class Post(SQLModel, table=True):
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     scheduled_for: Optional[datetime] = Field(default=None)
 
-    # JSON for multiple timestamps & metadata
-    updated_at: List[datetime] = Field(
-        sa_column=Column(JSON), default_factory=list[lambda: datetime.now(timezone.utc)],
+    # store timestamps as a JSON list (strings or ISO timestamps recommended)
+    updated_at: List[str] = Field(
+        sa_column=Column(JSON), default_factory=list,
         description="Timestamps when the post was last updated"
     )
 
