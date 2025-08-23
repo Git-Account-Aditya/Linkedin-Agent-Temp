@@ -39,9 +39,9 @@ app.add_middleware(
     allow_headers = ["*"],
 )
 
-templates = Jinja2Templates(directory='frontend/templates')
+# templates = Jinja2Templates(directory='frontend/templates')
 
-app.mount("/static", StaticFiles(directory="frontend/static"), name="static")
+# app.mount("/static", StaticFiles(directory="frontend/static"), name="static")
 
 # Include orchestrator routes
 app.include_router(orchestrator_routes.router, prefix="/api/v1/orchestrator", tags=["Orchestrator"])
@@ -56,6 +56,10 @@ app.include_router(schedule_routes.router, prefix="/api/v1/schedule", tags=["Sch
 #         "index.html",
 #         {"request": request, "status": "ok"}  # Add request to context
 #     )
+
+@app.get("/")
+async def root():
+    return {"status": "ok"}
 
 
 @app.get("/test-run")

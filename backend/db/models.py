@@ -60,7 +60,7 @@ class Post(SQLModel, table=True):
     )
 
     author: Optional[UserProfile] = Relationship(back_populates="posts")
-    comments: List["Comment"] = Relationship(back_populates="post")
+    comments: Optional[List["Comment"]] = Relationship(back_populates="post")
 
 
 # ---------- Recursive Comment ----------

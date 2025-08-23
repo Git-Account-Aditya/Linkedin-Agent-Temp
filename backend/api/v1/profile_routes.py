@@ -38,7 +38,7 @@ async def show_profile(user_id: int) -> ProfileResponse:
             status_code=200,
             content="Profile data fetched successfully",
             user_id=user_id,
-            # profile=profile_data
+            # profile=profile_data.model_dump()
             profile=None
         )
 
@@ -60,7 +60,7 @@ async def create_profile(request_body: ProfileCreateRequest):
             session.add(profile)
             session.commit()
             session.refresh(profile)  # Refresh to get the updated profile with user_id
-            session.close()
+            # session.close()
 
         print('Profile created successfully')
 
