@@ -55,8 +55,8 @@ class PublisherTool:
             tags=req.tags or [],
         )
 
-        post_id = str(api_res.get("post_id") or "")
-        url = api_res.get("url")
+        post_id = api_res.get("post_id") or None
+        url = api_res.get("url") or None
 
         resp = PublishResponse(
             post_id=post_id,
