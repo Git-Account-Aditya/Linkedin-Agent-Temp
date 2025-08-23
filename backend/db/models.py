@@ -2,7 +2,7 @@ from sqlmodel import SQLModel, Field, create_engine, Relationship, Column, JSON,
 from typing import Optional, List, Dict, Any
 from datetime import datetime, timezone
 from pydantic import AnyUrl, field_validator, TypeAdapter
-from pydantic.type_adapter import validate_python
+# from pydantic.type_adapter import validate_python
 
 
 # ---------- User ----------
@@ -35,7 +35,7 @@ class UserProfile(SQLModel, table=True):
 
     posts: Optional[List["Post"]] = Relationship(back_populates="author")
 
-    @field_validator("linkedin_url", pre=True, always=True)
+    @field_validator("linkedin_url", mode="before")
     def _validate_linkedin_url(cls, v):
         # Validate with TypeAdapter (Pydantic v2) and return plain string for DB binding
         ta = TypeAdapter(AnyUrl)

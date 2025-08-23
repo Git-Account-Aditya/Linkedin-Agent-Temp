@@ -50,12 +50,12 @@ app.include_router(content_routes.router, prefix="/api/v1", tags=["Content"])
 app.include_router(schedule_routes.router, prefix="/api/v1/schedule", tags=["Schedule"])
 
 
-@app.get("/", response_class=HTMLResponse)
-async def root(request: Request):  # Add request parameter
-    return templates.TemplateResponse(
-        "index.html",
-        {"request": request, "status": "ok"}  # Add request to context
-    )
+# @app.get("/", response_class=HTMLResponse)
+# async def root(request: Request):  # Add request parameter
+#     return templates.TemplateResponse(
+#         "index.html",
+#         {"request": request, "status": "ok"}  # Add request to context
+#     )
 
 
 @app.get("/test-run")
@@ -88,7 +88,7 @@ async def test_run():
     return {"status": "success", "result": result}
 
 
-@app.get("/api/health")
+@app.get("/health")
 async def health():
     return {"status": "ok"}
 
