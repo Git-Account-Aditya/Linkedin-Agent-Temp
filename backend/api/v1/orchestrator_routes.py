@@ -37,7 +37,7 @@ available_tools = [{'name': name, 'description': getattr(tool, 'description', ''
 
 @router.post("/run")
 async def run(request_body: dict):
-    user_id = (request_body or {}).get('user_id') or 'demo-user'
+    user_id = (request_body or {}).get('user_id') or None
     payload = {
         'context': {
             'user_id': user_id,

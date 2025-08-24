@@ -18,20 +18,20 @@ class ProfileResponse(BaseModel):
 # Pydantic class for creating a profile
 class ProfileCreateRequest(BaseModel):
     name: str
-    linkedin_url: AnyUrl
+    linkedin_url: str
 
 @router.get('/get_profile/{user_id}')
 async def show_profile(user_id: int) -> ProfileResponse:
     try:
         # get data from db
-        '''
+        
         with Session(engine) as session:
             profile_data = session.exec(select(UserProfile).filter(UserProfile.user_id == user_id)).first()
             if not isinstance(profile_data, UserProfile):
                 profile_data = UserProfile(**profile_data)  
             # Close the session
             session.close()
-        '''        
+                
 
         # return response
         return ProfileResponse(
@@ -39,7 +39,7 @@ async def show_profile(user_id: int) -> ProfileResponse:
             content="Profile data fetched successfully",
             user_id=user_id,
             # profile=profile_data.model_dump()
-            profile=None
+            profile=profile_data.model_dump()
         )
 
     except Exception as e:

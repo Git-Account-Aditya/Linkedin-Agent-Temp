@@ -1,5 +1,7 @@
 # backend/main.py
 from backend.api.v1 import content_routes, orchestrator_routes, profile_routes, schedule_routes
+from backend.api.routes.profile_utils_routes import profile_utility_routes
+
 from backend.services.orchestrator_services import run_agent
 from agent.llm import llm
 from agent.tools.profile_tool import ProfileScrapTool
@@ -45,17 +47,12 @@ app.add_middleware(
 
 # Include orchestrator routes
 app.include_router(orchestrator_routes.router, prefix="/api/v1/orchestrator", tags=["Orchestrator"])
-app.include_router(profile_routes.router, prefix="/api/v1", tags=["Profile"])
-app.include_router(content_routes.router, prefix="/api/v1", tags=["Content"])
+app.include_router(profile_routes.router, prefix="/api/v1/profile", tags=["Profile"])
+app.include_router(content_routes.router, prefix="/api/v1/content", tags=["Content"])
 app.include_router(schedule_routes.router, prefix="/api/v1/schedule", tags=["Schedule"])
+app.include_router(profile_utility_routes.router, prefix="/api/v1/profile/utils", tags=["Profile Utils"])
 
 
-# @app.get("/", response_class=HTMLResponse)
-# async def root(request: Request):  # Add request parameter
-#     return templates.TemplateResponse(
-#         "index.html",
-#         {"request": request, "status": "ok"}  # Add request to context
-#     )
 
 @app.get("/")
 async def root():
@@ -81,7 +78,7 @@ async def test_run():
     }
 
     payload = {
-        "context": {"user_id": "test_user"},
+        "context": {"user_id": 1},
         "available_tools": [{'name': name,
                             'description': tool.description} for name, tool in tools.items()],
         "llm": llm,

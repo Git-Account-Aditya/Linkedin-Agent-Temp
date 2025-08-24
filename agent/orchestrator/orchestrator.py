@@ -102,7 +102,7 @@ class DynamicAgentOrchestrator:
         self.tool_registry = tool_registry
         self.max_steps = max_steps
 
-    async def run(self, user_id: str, initial_context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    async def run(self, user_id: int, initial_context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """
         Run the agent loop. The mediator will decide which tool to call next based on context and tool metadata.
         Returns a trace with the sequence of steps and any outputs.
