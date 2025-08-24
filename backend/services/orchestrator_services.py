@@ -69,7 +69,7 @@ async def run_agent(payload: dict):
         Payload should be like this:
             {
                 "context": {
-                    "user_id": "123",
+                    "user_id": 123,
                     "session_id": "abc"
                 },
                 "tools_available": [

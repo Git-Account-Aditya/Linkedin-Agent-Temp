@@ -60,6 +60,7 @@ class ProfileScrapTool:
         profile = UserProfile(
             user_id=data.get("user_id"),
             name=data.get("name"),
+            linkedin_url=data.get("linkedin_url"),
             experience=data.get("experience"),
             skills=data.get("skills"),
             raw=data,

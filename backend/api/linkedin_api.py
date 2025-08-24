@@ -13,6 +13,7 @@ class linkedinapi:
         return {
             "user_id": user_id,
             "name": "John Doe",
+            "linkedin_url": "https://www.linkedin.com/in/JohnDoe",
             "experience": {"Salesforce": "3 years"},
             "skills": ["Python", "Machine Learning", "Data Analysis"],
             "posts": [
